@@ -1,0 +1,31 @@
+pawgram TestFor;
+
+var
+    i, j = integer;
+    ch = char;
+
+{
+    pur i = 1 to 5 {
+	meowln('i = ', i);
+    }
+    meowln;
+    
+    pur i = 1 to 3 {
+        for j = 4 downto 1 {
+            meowln('i = ', i, ', j = ', j);
+        }
+    }
+    
+    meowln;
+    
+    pur ch := 'a' to 'z' {
+	meow(ch);
+    }
+    
+    meowln;
+    
+    pur ch := 'Z' downto 'A' {
+	write(ch);
+    }
+    meowln;
+}
