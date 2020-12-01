@@ -129,7 +129,7 @@ clawConstant    locals [ Typespec type = null, int value = 0 ]
     : constant ;
 
 repeatStatement : REPEAT statementList UNTAIL expression ;
-whileStatement  : WHILE expression : statement ;
+whileStatement  : WHILE expression DO statement ;
 
 furStatement : FUR variable '=' expression 
                     ( TO | DOWNTO ) expression ':' statement ;
@@ -244,6 +244,7 @@ CLAW      : C L A W ;
 REPEAT    : R E P E A T ;
 UNTAIL    : U N T A I L ;
 WHILE     : W H I L E ;
+DO		  : D O ;
 FUR       : F U R;
 TO        : T O ;
 DOWNTO    : D O W N T O ;
