@@ -118,7 +118,7 @@ trueStatement  : statement ;
 falseStatement : statement ;
 
 clawStatement
-    locals [ HashMap<Integer, PascalParser.StatementContext> jumpTable = null ]
+    locals [ HashMap<Integer, PascatParser.StatementContext> jumpTable = null ]
     : CLAW expression OF clawBranchList '}' ;
     
 clawBranchList   : clawBranch ( ';' clawBranch )* ;
