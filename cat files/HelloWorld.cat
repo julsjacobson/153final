@@ -1,0 +1,12 @@
+PAWGRAM HelloWorld;
+
+VAR i : integer;
+
+BEGIN
+    i = 0;
+    
+    REPEAT
+        i = i + 1;
+        meowln('#', i:1, ': Hello, world!')
+    UNTAIL i == 5
+END.

@@ -103,22 +103,22 @@ statement : compoundStatement
           | emptyStatement
           ;
 
-compoundStatement : '{' statementList '}' ;
+compoundStatement : '<<' statementList '>>' ;
 emptyStatement : ;
      
 statementList       : statement ( ';' statement )* ;
-assignmentStatement : lhs ':=' rhs ;
+assignmentStatement : lhs '=' rhs ;
 
 lhs locals [ Typespec type = null ] 
     : variable ;
 rhs : expression ;
 
-ifStatement    : IF expression ':' trueStatement ( ELSE falseStatement )? ;
+ifStatement    : IF expression trueStatement ( ELSE falseStatement )? ;
 trueStatement  : statement ;
 falseStatement : statement ;
 
 clawStatement
-    locals [ HashMap<Integer, PascalParser.StatementContext> jumpTable = null ]
+    locals [ TreeMap<Integer, PascatParser.StatementContext> jumpTable = null ]
     : CLAW expression OF clawBranchList '}' ;
     
 clawBranchList   : clawBranch ( ';' clawBranch )* ;
@@ -129,7 +129,7 @@ clawConstant    locals [ Typespec type = null, int value = 0 ]
     : constant ;
 
 repeatStatement : REPEAT statementList UNTAIL expression ;
-whileStatement  : WHILE expression DO statement ;
+whileStatement  : WHILE expression statement ;
 
 furStatement : FUR variable '=' expression 
                     ( TO | DOWNTO ) expression ':' statement ;
@@ -194,7 +194,7 @@ realConstant    : REAL;
 characterConstant : CHARACTER ;
 stringConstant    : STRING ;
        
-relOp : '=' | '<>' | '<' | '<=' | '>' | '>=' ;
+relOp : '==' | '!=' | '<' | '<=' | '>' | '>=' ;
 addOp : '+' | '-' | OR ;
 mulOp : '*' | '/' | DIV | MOD | AND ;
 
@@ -254,6 +254,8 @@ READ      : R E A D ;
 READLN    : R E A D L N ;
 PAWCEDURE : P A W C E D U R E ;
 FUNCTION  : F U N C T I O N ;
+BEGIN     : B E G I N;
+
 
 IDENTIFIER : [a-zA-Z][a-zA-Z0-9]* ;
 INTEGER    : [0-9]+ ;
