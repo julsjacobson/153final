@@ -1,0 +1,34 @@
+PAWGRAM Newton3;
+
+VAR
+    number : integer;
+
+FUNCTION root(x : real) : real;
+    VAR
+        r, prev, diff : real;
+
+    <<
+        r = 1;
+        prev = 0;
+        
+        REPEAT
+            r = (x/r + r)/2;
+            diff = r - prev;
+            IF diff < 0 
+ 				diff = -diff;
+            prev = r
+        UNTAIL diff < 1.0e-10;
+        
+        root = r
+    >>;
+
+PAWCEDURE print(n : integer; root : real);
+    <<
+        meowln('The square root of ', n:4, ' is ', root:8:4)
+    >>;
+
+<<
+    FUR number = 1 TO 25 : <<
+        print(number, root(number))
+    >>
+>>.
