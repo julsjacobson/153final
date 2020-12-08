@@ -1,0 +1,30 @@
+PAWGRAM Convert;
+VAR
+	intemp : integer;
+
+FUNCTION ctof(temp : real) : real;
+VAR
+	outtemp : real;
+<<
+	outtemp = (9.0 / 5.0) * temp + 32.0; 
+	ctof = outtemp;
+>>;
+
+FUNCTION ctok(temp : real) : real;
+VAR
+	outtemp : real;
+<<
+	outtemp = temp + 273;
+	ctok = outtemp;
+>>;
+
+PAWCEDURE print(c,f,k : real);
+<<
+	meowln(c:8:2, ' in Farenheit is ', f:8:2, ' and in Kelvin is ', k:8:2);
+>>;
+
+<<
+	fur intemp = -100 TO 100 : <<
+		print(intemp, ctof(intemp), ctok(intemp));
+	>>  
+>>.
