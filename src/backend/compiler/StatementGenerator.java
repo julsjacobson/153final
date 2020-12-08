@@ -95,18 +95,21 @@ public class StatementGenerator extends CodeGenerator
      * @param ctx the IfStatementContext.
      */
    public void emitIf(PascatParser.IfStatementContext ctx) {
-		Label next_label = new Label(); // (next-label)
-		compiler.visit(ctx.expression()); // Code to evaluate boolean expression
+		Label next_label = new Label(); 
+		
+		compiler.visit(ctx.expression()); 
+		
 		if (ctx.falseStatement() == null) {
-			emit(IFEQ, next_label); // ifeq next-label
-			compiler.visit(ctx.trueStatement()); // Code for the THEN statement
-		} else {
-			Label false_label = new Label(); // (false-label)
-			emit(IFEQ, false_label); // ifeq false-label
-			compiler.visit(ctx.trueStatement()); // Code for the THEN statement
-			emit(GOTO, next_label); // goto next_label
-			emitLabel(false_label); // false-label
-			compiler.visit(ctx.falseStatement()); // Code for the ELSE statement
+			emit(IFEQ, next_label); 
+			compiler.visit(ctx.trueStatement());
+		} 
+		else {
+			Label falseLabel = new Label();
+			emit(IFEQ, falseLabel); 
+			compiler.visit(ctx.trueStatement()); 
+			emit(GOTO, next_label); 
+			emitLabel(falseLabel);
+			compiler.visit(ctx.falseStatement()); 
 		}
 		emitLabel(next_label); // next-label
 	}
@@ -117,60 +120,51 @@ public class StatementGenerator extends CodeGenerator
      */
     public void emitCase(PascatParser.ClawStatementContext ctx)
     {
-        //jumptable implemented as a tree map because lookupswitch requires the values to be ordered
         ctx.jumpTable = new TreeMap<Integer, PascatParser.StatementContext>(); 
         
-        //maps a branch's statement context to their jump label
+        //branch's statement context to the jump label
         HashMap<PascatParser.StatementContext, Label> stmtLabelMap = new HashMap<>();
-        
-        //loop through all of the branches
+
         for(ClawBranchContext branch : ctx.clawBranchList().clawBranch())
         {
-            //gets the statement context for a branch
             PascatParser.StatementContext stmtCtx = branch.statement();
             
-            //we can tell if the branch is actually empty by checking the statement context. If it is empty, skip this branch
             if(stmtCtx != null)
             {
-                //creates a label for the statement and adds it to the statement label map
                 Label stmtLabel = new Label();
                 stmtLabelMap.put(stmtCtx, stmtLabel);
                 
-                //loop through each constant in each branch
                 for(ClawConstantContext constCtx : branch.clawConstantList().clawConstant())
-                {
-                    //value of the constant is stored in each context object during the Semantics pass
-                    ctx.jumpTable.put(constCtx.value, stmtCtx);
-                }
+                	ctx.jumpTable.put(constCtx.value, stmtCtx);
+                
             }
         }
         
-        compiler.visit(ctx.expression()); //visits the expression and (hopefully) puts an integer on the top of the stack
+        compiler.visit(ctx.expression()); 
         
-        Label endCaseLabel = new Label(); //the label indicating the end of the case statement
+        Label endLabel = new Label();
         
         emit(LOOKUPSWITCH);
         
-        //loops through all of the keys and prints them with their labels; jumpTable is a tree map, so this is an ordered set
+        
         for(Integer i : ctx.jumpTable.keySet())
         {
             PascatParser.StatementContext stmtContext = ctx.jumpTable.get(i);
             Label stmtLabel = stmtLabelMap.get(stmtContext);
             
-            emitLabel(i, stmtLabel); //emits INTEGER : LABEL
+            emitLabel(i, stmtLabel); //INTEGER : LABEL
         }
         
-        emitLabel("default", endCaseLabel);
-        
-        //loops through all of the statement contexts and prints their label, the statement, and the goto end label
+        emitLabel("default", endLabel);
+
         for(PascatParser.StatementContext stmtCtx : stmtLabelMap.keySet())
         {
-            emitLabel(stmtLabelMap.get(stmtCtx)); //emits the LABEL: 
+            emitLabel(stmtLabelMap.get(stmtCtx)); 
             compiler.visit(stmtCtx);
-            emit(GOTO, endCaseLabel); //emits the goto END-LABEL
+            emit(GOTO, endLabel); 
         }
         
-        emitLabel(endCaseLabel); //emits END-LABEL:
+        emitLabel(endLabel);
     }
 
     /**
@@ -205,7 +199,6 @@ public class StatementGenerator extends CodeGenerator
         emitLabel(loopTopLabel);
         
         compiler.visit(ctx.expression());
-        //if the expression is true, TOS = 1, but if it is false, TOS = 0. if<cond> compares the TOS to 0, so we want ifeq to skip the rest of the while loop
         emit(IFEQ, loopExitLabel); 
         
         compiler.visit(ctx.statement());
@@ -222,50 +215,47 @@ public class StatementGenerator extends CodeGenerator
     public void emitFor(PascatParser.FurStatementContext ctx)
     {
         // Create labels
-        Label loop_label = new Label(); // (loop-label)
-        Label next_label = new Label(); // (next_label)
+        Label loop_label = new Label(); 
+        Label next_label = new Label(); 
         
-        // Evaluate expression for variable assignment
+        
         compiler.visit(ctx.expression(0));
-        // Emit variable assignment
+        
         emitStoreValue(ctx.variable().entry, ctx.variable().type);
         
-        // For statement
-        emitLabel(loop_label); // loop-label
+        emitLabel(loop_label); 
         
-        // Tests variable
         compiler.visit(ctx.variable()); 
         compiler.visit(ctx.expression(1));
         
         if(ctx.TO() != null)
         {
-            emit(IF_ICMPGT, next_label); ////if we've gone 1 past the TO value, leave the loop
+            emit(IF_ICMPGT, next_label); 
         }
         else
         {
-            emit(IF_ICMPLT, next_label); //if we've gone 1 past the DOWNTO value, leave the loop
+            emit(IF_ICMPLT, next_label); 
         }
         
-        compiler.visit(ctx.statement()); //emit the statements for the loop
+        compiler.visit(ctx.statement()); 
         
-        //load's the variable's value onto the stack
         emitLoadValue(ctx.variable().entry);
         
         if(ctx.TO() != null)
         {
-            emitLoadConstant(1); //increment if it is TO
+            emitLoadConstant(1); 
         }
         else
         {
-            emitLoadConstant(-1); //decrement if it is DOWNTO
+            emitLoadConstant(-1);
         }
         
-        emit(IADD); //adds 1 or -1 to the variable's value and puts it on the top of the stack
+        emit(IADD); 
         
-        emitStoreValue(ctx.variable().entry, ctx.variable().type); //sets the variable's value to the top of the stack
+        emitStoreValue(ctx.variable().entry, ctx.variable().type); 
         
-        emit(GOTO, loop_label);// goto loop-label
-        emitLabel(next_label);// next-label
+        emit(GOTO, loop_label);
+        emitLabel(next_label);
     }
     
     /**
@@ -275,11 +265,9 @@ public class StatementGenerator extends CodeGenerator
      public void emitProcedureCall(PascatParser.PawcedureCallStatementContext ctx)
     {
         /***** Complete this method. *****/
-    	// Procedure name: procedure
     	SymtabEntry procedureEntry = ctx.pawcedureName().entry; 
-    	// Add arguments to function signature: Program/procedure(II)
+    	
     	String procedureCall = routineHelper(procedureEntry, ctx.argumentList()); 
-    	// Return type is null: Program/procedure(II)V
     	procedureCall += "V"; 
     	emit(INVOKESTATIC, procedureCall);
     }
@@ -293,12 +281,10 @@ public class StatementGenerator extends CodeGenerator
     {
         SymtabEntry functionEntry = ctx.functionName().entry;
         
-        //emits the code for the arguments and gets a string that looks like Adder/add(II)
         String functionCall = routineHelper(functionEntry, ctx.argumentList());
         
         Typespec type = ctx.functionName().type;
         
-        //Adds the type to the function; now it looks like Adder/add(II)I
         functionCall += typeDescriptor(type);
         
         emit(INVOKESTATIC, functionCall);
